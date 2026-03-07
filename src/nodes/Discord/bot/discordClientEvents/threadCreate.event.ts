@@ -14,7 +14,7 @@ export default function (client: Client): void {
       if (state.channels[thread.parentId || ''] || state.channels.all) {
         ;[...(state.channels[thread.parentId || ''] ?? []), ...(state.channels.all ?? [])].forEach(async (trigger) => {
           if (
-            trigger.type === 'thread_create' &&
+            trigger.type === 'thread' &&
             (trigger.pattern?.length || trigger.value?.length || trigger.botMention)
           ) {
             if (trigger.roleIds?.length) {
@@ -25,7 +25,7 @@ export default function (client: Client): void {
             if (trigger.botMention && !botMention) return
 
             let match = false
-            if ((trigger.pattern?.length && trigger.type === 'thread_create') || trigger.value?.length) {
+            if ((trigger.pattern?.length && trigger.type === 'thread') || trigger.value?.length) {
               const regStr = trigger.pattern?.length ? trigger.pattern : `^${trigger.value}$`
               const reg = new RegExp(regStr, trigger.caseSensitive ? '' : 'i')
               match = reg.test(content)
