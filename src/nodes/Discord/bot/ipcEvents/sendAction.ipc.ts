@@ -90,7 +90,7 @@ export default function (ipc: typeof Ipc, client: Client) {
 
             if (nodeParameters.triggerPlaceholder && executionMatching?.placeholderId) {
               const realPlaceholderId = state.placeholderMatching[executionMatching.placeholderId]
-              if (realPlaceholderId && 'messages' in channel) {
+              if (realPlaceholderId && channel && 'messages' in channel) {
                 const message = await channel.messages.fetch(realPlaceholderId).catch((e: Error) => {
                   addLog(`${e}`, client)
                 })
