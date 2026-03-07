@@ -122,6 +122,21 @@ export const options: INodeProperties[] = [
         value: 'removeRole',
         description: 'Remove a role from a user.',
       },
+      {
+        name: 'Create thread',
+        value: 'createThread',
+        description: 'Create a new thread in a text or forum channel.',
+      },
+      {
+        name: 'Rename thread',
+        value: 'renameThread',
+        description: 'Rename an existing thread.',
+      },
+      {
+        name: 'Close thread',
+        value: 'closeThread',
+        description: 'Close an existing thread.',
+      },
     ],
     default: 'removeMessages',
     description: 'Let you choose the type of action you want to perform.',
@@ -170,6 +185,36 @@ export const options: INodeProperties[] = [
     },
     default: 100,
     description: 'Number of last messages to remove (Discord API allow max 150 and messages < 4 weeks old).',
+  },
+  {
+    displayName: 'Thread Name',
+    name: 'threadName',
+    type: 'string',
+    required: true,
+    displayOptions: {
+      show: {
+        type: ['action'],
+        actionType: ['createThread', 'renameThread'],
+      },
+    },
+    default: '',
+    description: 'The name of the thread.',
+  },
+  {
+    displayName: 'Content',
+    name: 'content',
+    type: 'string',
+    displayOptions: {
+      show: {
+        type: ['action'],
+        actionType: ['createThread'],
+      },
+    },
+    typeOptions: {
+      rows: 4,
+    },
+    default: '',
+    description: 'The first message of the thread. Required when creating a thread in a Forum.',
   },
   {
     displayName: 'Content',

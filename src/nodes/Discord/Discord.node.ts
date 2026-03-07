@@ -9,7 +9,6 @@ import {
   INodeType,
   INodeTypeDescription,
   JsonObject,
-  NodeConnectionType,
   NodeOperationError,
 } from 'n8n-workflow'
 
@@ -30,15 +29,15 @@ if (!process.send) bot()
 const nodeDescription: INodeTypeDescription = {
   displayName: 'Discord Send',
   name: 'discord',
-  group: ['discord'],
+  group: ['transform'],
   version: 1,
   description: 'Sends messages, embeds and prompts to Discord',
   defaults: {
     name: 'Discord Send',
   },
   icon: 'file:discord.svg',
-  inputs: [NodeConnectionType.Main],
-  outputs: [NodeConnectionType.Main],
+  inputs: ['main'],
+  outputs: ['main'],
   credentials: [
     {
       name: 'discordApi',
@@ -126,6 +125,8 @@ export interface IDiscordNodeActionParameters {
   userId?: string
   roleUpdateIds?: string[] | string
   auditLogReason: string
+  threadName?: string
+  content?: string
 }
 
 export class Discord implements INodeType {
@@ -209,12 +210,11 @@ export class Discord implements INodeType {
       } else if (nodeParameters.channelId || nodeParameters.executionId) {
         // return the interaction result if there is one
         const res = await ipcRequest(
-          `send:${
-            ['select', 'button'].includes(nodeParameters.type as string)
-              ? 'prompt'
-              : nodeParameters.type === 'none'
-                ? 'action'
-                : nodeParameters.type
+          `send:${['select', 'button'].includes(nodeParameters.type as string)
+            ? 'prompt'
+            : nodeParameters.type === 'none'
+              ? 'action'
+              : nodeParameters.type
           }`,
           nodeParameters,
         ).catch((e) => {

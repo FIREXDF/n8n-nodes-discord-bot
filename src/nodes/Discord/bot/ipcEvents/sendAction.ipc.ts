@@ -1,4 +1,4 @@
-import { Channel, Client, GuildMember, TextChannel, User } from 'discord.js'
+import { Channel, Client, GuildMember, TextChannel, User, ChannelType } from 'discord.js'
 import { Socket } from 'net'
 import Ipc from 'node-ipc'
 
@@ -23,7 +23,7 @@ export default function (ipc: typeof Ipc, client: Client) {
         client.channels
           .fetch(channelId)
           .then(async (channel: Channel | null): Promise<void> => {
-            if (!channel || !channel.isTextBased()) return
+            if (!channel || (!channel.isTextBased() && channel.type !== ChannelType.GuildForum)) return
 
             const performAction = async () => {
               if (nodeParameters.actionType === 'removeMessages') {
@@ -42,24 +42,46 @@ export default function (ipc: typeof Ipc, client: Client) {
                           typeof nodeParameters.roleUpdateIds === 'string'
                             ? nodeParameters.roleUpdateIds.split(',')
                             : nodeParameters.roleUpdateIds
-                        ;(roleUpdateIds ?? []).forEach((roleId: string) => {
-                          if (!roles.cache.has(roleId) && nodeParameters.actionType === 'addRole')
-                            roles.add(roleId, nodeParameters.auditLogReason)
-                          else if (roles.cache.has(roleId) && nodeParameters.actionType === 'removeRole')
-                            roles.remove(roleId, nodeParameters.auditLogReason)
-                        })
+                          ; (roleUpdateIds ?? []).forEach((roleId: string) => {
+                            if (!roles.cache.has(roleId) && nodeParameters.actionType === 'addRole')
+                              roles.add(roleId, nodeParameters.auditLogReason)
+                            else if (roles.cache.has(roleId) && nodeParameters.actionType === 'removeRole')
+                              roles.remove(roleId, nodeParameters.auditLogReason)
+                          })
                       })
                       .catch((e: Error) => addLog(`${e}`, client))
                   })
                   .catch((e: Error) => {
                     addLog(`${e}`, client)
                   })
+              } else if (nodeParameters.actionType === 'createThread') {
+                if ('threads' in channel) {
+                  await channel.threads
+                    .create({
+                      name: nodeParameters.threadName || 'New Thread',
+                      message: { content: nodeParameters.content || 'New thread created' },
+                      reason: nodeParameters.auditLogReason,
+                    })
+                    .catch((e: Error) => addLog(`${e}`, client))
+                }
+              } else if (nodeParameters.actionType === 'renameThread') {
+                if (channel.isThread()) {
+                  await channel
+                    .setName(nodeParameters.threadName || channel.name, nodeParameters.auditLogReason)
+                    .catch((e: Error) => addLog(`${e}`, client))
+                }
+              } else if (nodeParameters.actionType === 'closeThread') {
+                if (channel.isThread()) {
+                  await channel
+                    .setArchived(true, nodeParameters.auditLogReason)
+                    .catch((e: Error) => addLog(`${e}`, client))
+                }
               }
             }
 
             if (nodeParameters.triggerPlaceholder && executionMatching?.placeholderId) {
               const realPlaceholderId = state.placeholderMatching[executionMatching.placeholderId]
-              if (realPlaceholderId) {
+              if (realPlaceholderId && 'messages' in channel) {
                 const message = await channel.messages.fetch(realPlaceholderId).catch((e: Error) => {
                   addLog(`${e}`, client)
                 })

@@ -1,5 +1,13 @@
 # Changelog
 
+## Released (2025-04-13 0.8.9)
+
+### New Features
+
+- Added support for Discord forum channels (`GuildForum`) and thread channels (`PublicThread`, `PrivateThread`)
+- Added ability to create, rename, and close threads via node `Action` menu
+- Added `Thread Name` field to UI for thread management actions
+
 ## Released (2025-04-13 0.7.4)
 
 ### New Features

@@ -10,10 +10,14 @@ export default function (ipc: typeof Ipc, client: Client) {
     try {
       if (state.ready) {
         const guild = client.guilds.cache.first()
-        const channels =
-          guild?.channels.cache.filter(
-            (c) => c.type === ChannelType.GuildText || c.type === ChannelType.GuildAnnouncement,
-          ) ?? ([] as GuildBasedChannel[])
+        const channels = guild?.channels.cache.filter(
+          (c) =>
+            c.type === ChannelType.GuildText ||
+            c.type === ChannelType.GuildAnnouncement ||
+            c.type === ChannelType.GuildForum ||
+            c.type === ChannelType.PublicThread ||
+            c.type === ChannelType.PrivateThread,
+        ) ?? ([] as GuildBasedChannel[])
         const channelsList = Array.from(channels.values()).map((channel: GuildBasedChannel) => {
           return {
             name: channel?.name,
