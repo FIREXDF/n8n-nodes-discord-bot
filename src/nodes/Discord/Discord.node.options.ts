@@ -137,6 +137,11 @@ export const options: INodeProperties[] = [
         value: 'closeThread',
         description: 'Close an existing thread.',
       },
+      {
+        name: 'Get node logs',
+        value: 'getLogs',
+        description: 'Retrieve the internal logs of the Discord Bot.',
+      },
     ],
     default: 'removeMessages',
     description: 'Let you choose the type of action you want to perform.',

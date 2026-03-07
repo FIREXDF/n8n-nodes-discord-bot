@@ -23,7 +23,7 @@ export default function (ipc: typeof Ipc, client: Client) {
         client.channels
           .fetch(channelId)
           .then(async (channel: Channel | null): Promise<void> => {
-            if (!channel || (!channel.isTextBased() && channel.type !== ChannelType.GuildForum)) return
+            if (nodeParameters.actionType !== 'getLogs' && (!channel || (!channel.isTextBased() && channel.type !== ChannelType.GuildForum))) return
 
             const performAction = async () => {
               if (nodeParameters.actionType === 'removeMessages') {
@@ -55,7 +55,7 @@ export default function (ipc: typeof Ipc, client: Client) {
                     addLog(`${e}`, client)
                   })
               } else if (nodeParameters.actionType === 'createThread') {
-                if ('threads' in channel) {
+                if (channel && 'threads' in channel) {
                   await channel.threads
                     .create({
                       name: nodeParameters.threadName || 'New Thread',
@@ -65,18 +65,27 @@ export default function (ipc: typeof Ipc, client: Client) {
                     .catch((e: Error) => addLog(`${e}`, client))
                 }
               } else if (nodeParameters.actionType === 'renameThread') {
-                if (channel.isThread()) {
+                if (channel?.isThread()) {
                   await channel
                     .setName(nodeParameters.threadName || channel.name, nodeParameters.auditLogReason)
                     .catch((e: Error) => addLog(`${e}`, client))
                 }
               } else if (nodeParameters.actionType === 'closeThread') {
-                if (channel.isThread()) {
+                if (channel?.isThread()) {
                   await channel
                     .setArchived(true, nodeParameters.auditLogReason)
                     .catch((e: Error) => addLog(`${e}`, client))
                 }
+              } else if (nodeParameters.actionType === 'getLogs') {
+                const logs = state.logs.length > 0 ? state.logs.join('\n') : 'No logs available.'
+                ipc.server.emit(socket, 'send:action', {
+                  channelId,
+                  action: nodeParameters.actionType,
+                  value: logs, // Pass the logs back in the 'value' property
+                })
+                return true // Handled emit
               }
+              return false
             }
 
             if (nodeParameters.triggerPlaceholder && executionMatching?.placeholderId) {
@@ -99,11 +108,13 @@ export default function (ipc: typeof Ipc, client: Client) {
                         addLog(`${e}`, client)
                       })
 
-                      await performAction()
-                      ipc.server.emit(socket, 'send:action', {
-                        channelId,
-                        action: nodeParameters.actionType,
-                      })
+                      const handled = await performAction()
+                      if (!handled) {
+                        ipc.server.emit(socket, 'send:action', {
+                          channelId,
+                          action: nodeParameters.actionType,
+                        })
+                      }
                     }
                   }
                   await retry()
@@ -112,11 +123,13 @@ export default function (ipc: typeof Ipc, client: Client) {
               }
             }
 
-            await performAction()
-            ipc.server.emit(socket, 'send:action', {
-              channelId,
-              action: nodeParameters.actionType,
-            })
+            const handled = await performAction()
+            if (!handled) {
+              ipc.server.emit(socket, 'send:action', {
+                channelId,
+                action: nodeParameters.actionType,
+              })
+            }
           })
           .catch((e: Error) => {
             addLog(`${e}`, client)
