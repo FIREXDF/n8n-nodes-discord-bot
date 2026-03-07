@@ -142,6 +142,11 @@ export const options: INodeProperties[] = [
         value: 'getLogs',
         description: 'Retrieve the internal logs of the Discord Bot.',
       },
+      {
+        name: 'Get thread info',
+        value: 'getThread',
+        description: 'Retrieve the name, ID, and parent ID of a specific thread.',
+      },
     ],
     default: 'removeMessages',
     description: 'Let you choose the type of action you want to perform.',
@@ -204,6 +209,48 @@ export const options: INodeProperties[] = [
     },
     default: '',
     description: 'The name of the thread.',
+  },
+  {
+    displayName: 'Prefix',
+    name: 'prefix',
+    type: 'string',
+    displayOptions: {
+      show: {
+        type: ['action'],
+        actionType: ['renameThread'],
+      },
+    },
+    default: '',
+    required: false,
+    description: 'Prefix to add to the beginning of the thread name. e.g. [SOLVED] ',
+  },
+  {
+    displayName: 'If name is too long',
+    name: 'prefixTruncation',
+    type: 'options',
+    displayOptions: {
+      show: {
+        type: ['action'],
+        actionType: ['renameThread'],
+      },
+      hide: {
+        prefix: [''],
+      },
+    },
+    options: [
+      {
+        name: 'Truncate end with ...',
+        value: 'truncateEnd',
+        description: 'If the prefix + name exceeds Discord max length (100), the name is truncated and ends with ...',
+      },
+      {
+        name: 'Fail/Skip',
+        value: 'fail',
+        description: 'Fails to rename if it exceeds Discord limits limit.',
+      },
+    ],
+    default: 'truncateEnd',
+    description: 'What to do if combining the prefix and the thread name exceeds 100 characters limit.',
   },
   {
     displayName: 'Content',

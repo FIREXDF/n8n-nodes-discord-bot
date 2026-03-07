@@ -35,13 +35,23 @@ export default function (client: Client): void {
 
             if (match) {
               addLog(`triggerWorkflow ${trigger.webhookId}`, client)
+              let owner
+              if (thread.ownerId) {
+                owner = await client.users.fetch(thread.ownerId).catch(() => undefined)
+              }
+
               const isEnabled = await triggerWorkflow(
                 trigger.webhookId,
-                null,
+                {
+                  content: thread.name,
+                  channelId: thread.parentId || thread.id,
+                  id: thread.id,
+                  author: owner || { id: thread.ownerId, username: '', tag: '' },
+                } as unknown as any,
                 '',
                 state.baseUrl,
-                undefined,
-                thread.id,
+                owner,
+                thread.parentId || thread.id,
               ).catch((e: Error) => {
                 addLog(`Error triggering workflow: ${e.message}`, client)
                 return false

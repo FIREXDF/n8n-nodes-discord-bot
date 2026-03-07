@@ -127,6 +127,8 @@ export interface IDiscordNodeActionParameters {
   auditLogReason: string
   threadName?: string
   content?: string
+  prefix?: string
+  prefixTruncation?: string
 }
 
 export class Discord implements INodeType {
@@ -255,6 +257,8 @@ function createReturnData(res: {
   userTag?: string
   messageId?: string
   action?: string
+  threadId?: string
+  url?: string
 }): INodeExecutionData {
   return {
     json: {
@@ -265,6 +269,8 @@ function createReturnData(res: {
       userTag: res?.userTag,
       messageId: res?.messageId,
       action: res?.action,
+      threadId: res?.threadId,
+      url: res?.url,
     },
   }
 }

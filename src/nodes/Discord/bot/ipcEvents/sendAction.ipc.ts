@@ -56,18 +56,42 @@ export default function (ipc: typeof Ipc, client: Client) {
                   })
               } else if (nodeParameters.actionType === 'createThread') {
                 if (channel && 'threads' in channel) {
-                  await channel.threads
+                  const newThread = await channel.threads
                     .create({
                       name: nodeParameters.threadName || 'New Thread',
                       message: { content: nodeParameters.content || 'New thread created' },
                       reason: nodeParameters.auditLogReason,
                     })
                     .catch((e: Error) => addLog(`${e}`, client))
+
+                  if (newThread) {
+                    ipc.server.emit(socket, 'send:action', {
+                      channelId: newThread.parentId || channelId,
+                      threadId: newThread.id,
+                      messageId: newThread.id, // In forums, the thread ID is also the ID of its starter message/post
+                      userId: newThread.ownerId,
+                      action: nodeParameters.actionType,
+                      value: newThread.name,
+                      url: newThread.url,
+                    })
+                    return true // Handled emit
+                  }
                 }
               } else if (nodeParameters.actionType === 'renameThread') {
                 if (channel?.isThread()) {
+                  let newName = nodeParameters.threadName || channel.name
+                  if (nodeParameters.prefix) {
+                    newName = nodeParameters.prefix + newName
+                    if (newName.length > 100) {
+                      if (nodeParameters.prefixTruncation === 'fail') {
+                        throw new Error(`Thread name exceeds 100 characters limit: ${newName.length}`)
+                      } else {
+                        newName = newName.substring(0, 97) + '...'
+                      }
+                    }
+                  }
                   await channel
-                    .setName(nodeParameters.threadName || channel.name, nodeParameters.auditLogReason)
+                    .setName(newName, nodeParameters.auditLogReason)
                     .catch((e: Error) => addLog(`${e}`, client))
                 }
               } else if (nodeParameters.actionType === 'closeThread') {
@@ -75,6 +99,19 @@ export default function (ipc: typeof Ipc, client: Client) {
                   await channel
                     .setArchived(true, nodeParameters.auditLogReason)
                     .catch((e: Error) => addLog(`${e}`, client))
+                }
+              } else if (nodeParameters.actionType === 'getThread') {
+                if (channel?.isThread()) {
+                  ipc.server.emit(socket, 'send:action', {
+                    channelId: channel.parentId || channelId,
+                    threadId: channel.id,
+                    messageId: channel.id,
+                    userId: channel.ownerId,
+                    action: nodeParameters.actionType,
+                    value: channel.name,
+                    url: channel.url,
+                  })
+                  return true
                 }
               } else if (nodeParameters.actionType === 'getLogs') {
                 const logs = state.logs.length > 0 ? state.logs.join('\n') : 'No logs available.'

@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-discord-bot-reworked",
-  "version": "0.8.15",
+  "version": "0.8.18",
   "description": "nodes to trigger workflows from Discord or send interactive messages. Uses the components API which allows to create dialogs (e.g. attach buttons and wait for the user to click on them)",
   "keywords": [
     "n8n",
@@ -30,7 +30,7 @@
     "lint:fix": "eslint src/nodes src/credentials --fix",
     "lint:format": "prettier src/nodes src/credentials --write",
     "lint": "pnpm lint:format && pnpm lint:fix",
-    "publish": "pnpm build && pnpm publish --access public"
+    "publish": "pnpm build && pnpm publish --access public --no-git-checks"
   },
   "files": [
     "dist"
