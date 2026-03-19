@@ -1,4 +1,10 @@
-# n8n-nodes-discord
+# Why did i rework this node?
+
+Basically the original project a lot of things no does not work, so i decided to rework it and add some new features that i needed.
+
+You can make pull requests or report some bugs but i will not work a lot on this project. This is mostly for my own use.
+
+# n8n-nodes-discord-reworked
 
 ![n8n.io - Workflow Automation](https://raw.githubusercontent.com/n8n-io/n8n/master/assets/n8n-logo.png)
 
@@ -213,6 +219,7 @@ To help you create and debug your workflow with Discord Trigger/Send nodes, some
 - `/logs`: Display the last logs stored in memory (max 100).
   - **With parameters**
     - `/logs 10`: If you specify a number, it will display the last [number] of logs.
+    - `/logs today`: Display only logs from today.
     - `/logs clear`: Remove all logs in memory.
     - `/logs on`: Logs are automatically sent in the current channel.
     - `/logs off`: Disable logs being automatically sent in the channel.
